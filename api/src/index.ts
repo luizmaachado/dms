@@ -3,6 +3,7 @@ import http from 'http';
 import bodyParser from 'body-parser';
 import compression from 'compression';
 import mongoose from 'mongoose';
+import router from './router';
 import dotenv from 'dotenv';
 dotenv.config();
 const MONGO_URL = process.env.MONGO_URL;
@@ -24,3 +25,4 @@ mongoose.connection.on('error', (error: Error) => console.log(error));
 mongoose.connection.once('open', () => console.log('Connected mongo'));
 
 
+app.use('/', router());
