@@ -1,0 +1,105 @@
+version: '2.1'
+
+services:
+
+  rabbit:
+    build: rabbit_mq/.
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:15672" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - local
+
+  dmsmongodb:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: db
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/db:/data/db
+    networks:
+      - local
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      target: base
+    volumes:
+      - ./api/src:/home/node/app/src
+      - ./api/nodemon.json:/home/node/app/nodemon.json
+    container_name: api
+    expose:
+      - '8080'
+    ports:
+      - '8080:8080'
+    command: npm run start
+    networks:
+      - local
+    depends_on:
+      rabbit:
+        condition: service_healthy
+
+  orchestrator:
+    build:
+      context: ./orchestrator
+      dockerfile: Dockerfile
+      target: base
+    volumes:
+      - ./orchestrator/src:/home/node/app/src
+      - ./orchestrator/nodemon.json:/home/node/app/nodemon.json
+    container_name: orchestrator
+    command: npm run watch
+    networks:
+      - local
+    depends_on:
+      rabbit:
+        condition: service_healthy
+
+  sum_consumer:
+    build:
+      context: ./sum_consumer
+      dockerfile: Dockerfile
+      target: base
+    volumes:
+      - ./sum_consumer/src:/home/node/app/src
+      - ./sum_consumer/nodemon.json:/home/node/app/nodemon.json
+    container_name: sum_consumer
+    command: npm run watch
+    networks:
+      - local
+    depends_on:
+      rabbit:
+        condition: service_healthy
+
+  mult_consumer:
+    build:
+      context: ./mult_consumer
+      dockerfile: Dockerfile
+      target: base
+    volumes:
+      - ./mult_consumer/src:/home/node/app/src
+      - ./mult_consumer/nodemon.json:/home/node/app/nodemon.json
+    container_name: mult_consumer
+    command: npm run watch
+    networks:
+      - local
+    depends_on:
+      rabbit:
+        condition: service_healthy
+
+networks:
+  local:
+
+
