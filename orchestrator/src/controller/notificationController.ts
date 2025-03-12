@@ -41,7 +41,7 @@ export class NotificationController {
                 }
             }
             else {
-                this.updateTask(parsedMessage.id, { "status": "completed" })
+                this.updateTask(parsedMessage.id, { "status": "completed", "result": parsedMessage.payload.result.toString() })
             }
 
 
