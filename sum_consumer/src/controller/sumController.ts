@@ -47,9 +47,9 @@ export class SumController {
         if (next !== undefined) {
             queue = next;
         }
-        await mqConnection.sendToQueue(next, notification);
+        await mqConnection.sendToQueue(queue, notification);
 
-        console.log(`Sent the notification to consumer`);
+        console.log(`Sent the notification to consumer ${queue}`);
     };
 
 }
