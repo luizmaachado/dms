@@ -5,12 +5,15 @@ import compression from 'compression';
 import router from './router';
 import dotenv from 'dotenv';
 import { connectDB } from './service/dbConnection';
+import mqConnection from './service/amqpConnection';
 
 
 async function main() {
     dotenv.config();
 
     await connectDB();
+
+    await mqConnection.connect();
 
     const app = express();
 
@@ -20,7 +23,7 @@ async function main() {
 
     const server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse> = http.createServer(app);
 
-    server.listen(8080, () => console.log('Server is running on http://localhost:8080'))
+    server.listen(process.env.PORT, () => console.log('Server is running'))
 
     app.use('/api', router());
 }

@@ -7,8 +7,14 @@ const TaskSchema = new mongoose.Schema({
     description: {
         type: String, required: true
     },
+    payload: {
+        type: JSON, required: true
+    },
     status: {
         type: String, required: false, default: 'pending'
+    },
+    result: {
+        type: String, required: false
     }
 });
 
