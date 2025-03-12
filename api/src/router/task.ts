@@ -1,7 +1,8 @@
 import express from 'express';
-import { postTask, getAll } from '../controller/taskController';
+import { postTask, getAllTasks, updateTask } from '../controller/taskController';
 
 export default (router: express.Router) => {
     router.post('/task', postTask);
-    router.get('/task', getAll);
+    router.get('/task', getAllTasks);
+    router.patch('/task/:id', updateTask);
 };

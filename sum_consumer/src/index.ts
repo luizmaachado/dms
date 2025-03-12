@@ -8,7 +8,7 @@ async function main() {
 
     dotenv.config();
 
-    var queue: string = process.env.NOTIFICATION_QUEUE as string;
+    var queue: string = process.env.RECEIVING_QUEUE as string;
 
     await mqConnection.connect();
 
