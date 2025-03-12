@@ -16,6 +16,9 @@ export class NotificationController {
                 parsedMessage.payload.nextSteps.push('mult')
                 this.send('sum', parsedMessage.id, parsedMessage.payload,);
             }
+            if (parsedMessage.name === 'sum') {
+                this.send('sum', parsedMessage.id, parsedMessage.payload,);
+            }
 
         } catch (error) {
             console.error(`Error executing job`);
@@ -25,11 +28,21 @@ export class NotificationController {
     handleTaskNotification = (msg: string) => {
         try {
             const parsedMessage: Message = JSON.parse(msg);
-            console.log(parsedMessage.payload)
-            if (parsedMessage.payload.error) {
-                console.log("erro catastrofico")
+            console.log(parsedMessage);
+            if (parsedMessage.payload.has_error) {
+                if (parsedMessage.payload.has_error > 3) {
+                    console.log("Multiple errors detected, task failed");
+                    this.updateTask(parsedMessage.id, { "status": "failed" })
+
+                }
+                else {
+                    console.log("Error detected, resending task to queue");
+                    this.send(parsedMessage.name, parsedMessage.id, parsedMessage.payload);
+                }
             }
-            this.updateTask(parsedMessage.id, { "status": "completed" })
+            else {
+                this.updateTask(parsedMessage.id, { "status": "completed" })
+            }
 
 
         } catch (error) {
@@ -51,17 +64,12 @@ export class NotificationController {
     sendNotification = async (notification: Message) => {
         await mqConnection.sendToQueue(notification.name, notification);
 
-        console.log(`Sent the notification to consumer`);
+        console.log(`Sent the notification to consumer ${notification.name}`);
     };
 
     updateTask = async (taskId: string, updates: Record<string, any>): Promise<void> => {
         try {
-            const response = await axios.patch(`${process.env.API_URL}/task/${taskId}`, updates, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer YOUR_ACCESS_TOKEN`, // Add authentication if required
-                },
-            });
+            const response = await axios.patch(`${process.env.API_URL}/task/${taskId}`, updates);
 
         } catch (error) {
             console.error("Error updating task:", error);

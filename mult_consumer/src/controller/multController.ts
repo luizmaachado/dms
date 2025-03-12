@@ -24,11 +24,15 @@ export class MultController {
 
         } catch (error) {
             console.error(`Error executing job`);
-            parsedMessage.payload.error = error;
+            if (parsedMessage.payload.has_error !== undefined) {
+                parsedMessage.payload.has_error = parsedMessage.payload.has_error + 1
+            }
+            else {
+                parsedMessage.payload = { "has_error": 1 };
+            }
 
         }
         finally {
-            console.log(parsedMessage.payload)
             this.send(process.env.RECEIVING_QUEUE, parsedMessage.id, parsedMessage.payload)
         }
     };
@@ -43,15 +47,13 @@ export class MultController {
             id: id,
             payload: payload
         };
-
         this.sendNotification(newNotification);
     };
 
 
     sendNotification = async (notification: MultMessageModel) => {
-        await mqConnection.sendToQueue(process.env.RETURN_QUEUE, notification);
 
-        console.log(`Sent the notification to consumer`);
+        await mqConnection.sendToQueue(process.env.RETURN_QUEUE, notification);
     };
 
 }
