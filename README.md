@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Distributed Messaging System (DMS) is designed to handle task notifications and processing using RabbitMQ for message queuing, a REST API for task management, and MongoDB for data storage. The system consists of multiple components including an API, an orchestrator, and message queue consumers (`sum` and `mult`).
+The Distributed Messaging System (DMS) is designed to handle task notifications and processing using RabbitMQ for message queuing, a REST API for task entrypoint, a orchestrator for task management, consumers for task execution, and MongoDB for data storage. The system consists of multiple components including an API, an orchestrator, and message queue consumers (`sum` and `mult`).
 
 ## Architecture
 
@@ -63,27 +63,27 @@ RabbitMQ is used to manage the queue of tasks and notifications. It ensures that
 2. Set up environment variables:
     - Create a `.env` file in the [api](http://_vscodecontentref_/1) directory with the following variables:
         ```env
-        RABBIT_URL= 'amqp://guest:guest@rabbit:5672'
-        MONGO_URL='mongodb://root:root@dmsmongodb/'
-        DECIDER_QUEUE_NAME="deciderQueue"
         PORT=8080
+        MONGO_URL='mongodb://root:root@dmsmongodb/'
+        RABBIT_URL= 'amqp://guest:guest@rabbit:5672'
+        DECIDER_QUEUE_NAME='deciderQueue'
         ```
 
     - Create a `.env` file in the [orchestrator](http://_vscodecontentref_/2) directory with the following variables:
         ```env
-        RABBIT_URL='amqp://guest:guest@localhost:5672'
-        API_URL="http://localhost:8080/api"
-        MONGO_URL='mongodb://root:root@localhost:/'
+        MONGO_URL='mongodb://root:root@dmsmongodb/'
+        RABBIT_URL= 'amqp://guest:guest@rabbit:5672'
         CONSUME_QUEUE_NAME="deciderQueue"
         RETURN_QUEUE_NAME="returnQueue"
+        API_URL="http://api:8080/api"
 
         ```
 
     - Create a `.env` file in the [sum_consumer](http://_vscodecontentref_/3) directory with the following variables:
         ```env
-        RECEIVING_QUEUE='mult'
+        RECEIVING_QUEUE='sum'
         RETURN_QUEUE='returnQueue'
-        RABBIT_URL = 'amqp://guest:guest@localhost:5672'
+        RABBIT_URL= 'amqp://guest:guest@rabbit:5672'
 
         ```
 
@@ -91,7 +91,7 @@ RabbitMQ is used to manage the queue of tasks and notifications. It ensures that
         ```env
         RECEIVING_QUEUE='mult'
         RETURN_QUEUE='returnQueue'
-        RABBIT_URL = 'amqp://guest:guest@localhost:5672'
+        RABBIT_URL= 'amqp://guest:guest@rabbit:5672'
 
         ```
 
@@ -176,8 +176,14 @@ RabbitMQ is used to manage the queue of tasks and notifications. It ensures that
 
 ## Scalability
 
-To scale the system beyond the prototype:
+To scale the system beyond the prototype I would:
 - **Horizontal Scaling**: Deploy multiple instances of the API, orchestrator, and consumers to handle increased load.
 - **Load Balancing**: Use a load balancer to distribute incoming requests across multiple instances.
 - **Message Queue**: RabbitMQ can be clustered to handle higher message throughput and ensure high availability.
 - **Database Sharding**: Implement sharding in MongoDB to distribute data across multiple servers.
+- **Kubernetes**: Deploying the system on Kubernetes would provide several benefits:
+  - **Automatic Scaling**: Kubernetes can automatically scale the number of instances of each service based on the load.
+  - **Self-Healing**: Kubernetes can automatically restart failed containers and ensure that the desired state of the system is maintained.
+  - **Service Discovery and Load Balancing**: Kubernetes provides built-in service discovery and load balancing, making it easier to manage and scale services.
+  - **Resource Management**: Kubernetes allows for efficient resource management and allocation, ensuring that the system can handle varying loads efficiently.
+  - **Deployment Automation**: Kubernetes supports automated deployments and rollbacks, making it easier to manage updates and changes to the system.
